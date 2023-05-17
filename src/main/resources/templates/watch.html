@@ -74,7 +74,9 @@
             const videoName = data.videoName;
             const timeMS = data.timeMS;
             video.src = `/videos/${videoName}`;
-            checkOwner(timeMS);
+            video.oncanplay = () => {
+                checkOwner(timeMS);
+            };
         });
 </script>
 </body>
