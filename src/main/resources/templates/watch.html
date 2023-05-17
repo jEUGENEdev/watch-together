@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Просмотр Видео</title>
+
+    <style>
+        body {
+            margin: 0;
+            background: #494D4E;
+        }
+
+        main {
+            height: 100svh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #video {
+            height: 60svh;
+            width: 60vw;
+            box-shadow: 0 0 10px black;
+        }
+
+        @media screen and (max-width: 1000px) {
+            #video {
+                width: 85vw;
+                height: 30svh;
+            }
+        }
+    </style>
+</head>
+<body>
+<main>
+    <video id="video" autoplay controls></video>
+</main>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const roomUUID = params.get("room");
+    const video = document.querySelector("#video");
+    let owner = false;
+
+    function checkOwner(timeMS) {
+        fetch(`/setTimeSession?time_ms=${timeMS}`).then(data => {
+            if(data.ok) {
+                owner = true;
+                setInterval(setTime, 500);
+            }
+            else {
+                setInterval(getTime, 500);
+            }
+        });
+    }
+
+    function setTime() {
+        console.log(`set time: ${video.currentTime}`);
+        fetch(`/setTimeSession?time_ms=${Math.ceil(video.currentTime * 1000)}`);
+    }
+
+    function getTime() {
+        fetch(`/getSession?room_id=${roomUUID}`).then(data => data.json())
+            .then(data => {
+                console.log(`update time: roomID(${roomUUID}), timeMS(${data.timeMS}), current(${video.currentTime})`);
+                if(Math.abs(data.timeMS - Math.ceil(video.currentTime * 1000)) >= 1500) {
+                    video.currentTime = data.timeMS / 1000;
+                }
+            });
+    }
+
+    fetch(`/getSession?room_id=${roomUUID}`).then(data => data.json())
+        .then(data => {
+            const videoName = data.videoName;
+            const timeMS = data.timeMS;
+            video.src = `/videos/${videoName}`;
+            checkOwner(timeMS);
+        });
+</script>
+</body>
+</html>

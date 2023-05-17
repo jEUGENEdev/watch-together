@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Список комнат</title>
+
+    <style>
+        a {
+            font-size: 3vw;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<div id="list"></div>
+
+<script>
+    fetch("/allRooms").then(data => data.json())
+        .then(data => {
+            const list = document.querySelector("#list");
+            Object.keys(data).forEach(uuid => {
+                const uuidElement = document.createElement("a");
+                uuidElement.innerText = uuid;
+                uuidElement.href = `/watch?room=${uuid}`;
+                list.append(uuidElement);
+            });
+        });
+</script>
+</body>
+</html>
